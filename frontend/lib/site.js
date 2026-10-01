@@ -1,14 +1,22 @@
 export const site = {
   name: 'National Institute of Welding',
   tagline: 'Learn. Practice. Qualify. Build Your Career.',
-  phone: '+91 93544 47475',
-  phoneHref: 'tel:+919354447475',
+  phone: '+91 81100 00330 / +91 80560 63023',
+  phone1: '+91 81100 00330',
+  phone2: '+91 80560 63023',
+  phoneHref: 'tel:+918110000330',
+  phoneHref2: 'tel:+918056063023',
   whatsappHref:
-    'https://wa.me/919354447475?text=' +
-    encodeURIComponent('Hi, I am reading the NIW Knowledge Center and would like course details, fees and next batch date.'),
-  email: 'info@weldingskill.com',
+    'https://wa.me/918110000330?text=' +
+    encodeURIComponent('Hi, I am reading the NIW website and would like course details, fees and next batch date.'),
+  email: 'enquiry@weldingskill.com',
   website: 'www.weldingskill.com',
-  address: ['No.12, WeldingSkill Institute,', 'SIDCO Industrial Estate,', 'Ambattur, Chennai - 600 098,', 'Tamil Nadu, India.'],
+  address: [
+    'No.2/24, Pillaiyar Koil Street,',
+    'Raghavendra Nagar,',
+    'Irandamkattalai, Kovur,',
+    'Chennai - 600 128, Tamil Nadu, India.',
+  ],
   social: {
     facebook: 'https://facebook.com/',
     instagram: 'https://instagram.com/',
@@ -50,20 +58,16 @@ export const mainNav = [
   { label: 'Contact', href: '/contact' },
 ];
 
-// Page photos. Leave as null until the file exists in frontend/public/images/,
-// then set the path, e.g. homeHero: '/images/home-hero.jpg'.
-// (A path to a missing file makes the browser request it on every page load.)
 export const images = {
-  homeHero: '/images/welding-hero.jpg',        // homepage hero
-  knowledgeHero: null,   // Knowledge Center hero
-  trainingHero: null,    // Welding Training hero
-  careerBand: null,      // "Build a successful career" band
-  enquireBox: null,      // homepage enquiry box background
-  ctaBand: null,         // dark "Ready to start…" band
-  whyPractical: null,    // Why Choose NIW photos (training page)
+  homeHero: '/images/welding-hero.jpg',
+  knowledgeHero: null,
+  trainingHero: null,
+  careerBand: null,
+  enquireBox: null,
+  ctaBand: null,
+  whyPractical: null,
   whyTheory: null,
   whyPractice: null,
 };
 
-/** "url('...'), " for a set photo, "" otherwise — for use inside a backgroundImage list */
 export const bgUrl = (src) => (src ? `url('${src}'), ` : '');

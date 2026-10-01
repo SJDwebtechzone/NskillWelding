@@ -1,15 +1,10 @@
 import Link from 'next/link';
-import { Phone, MessageCircle, ArrowRight, Home, ShieldCheck, Wrench, Sparkles, BookOpen } from 'lucide-react';
+import { Phone, MessageCircle, ArrowRight, Home, Wrench, BookOpen } from 'lucide-react';
 import { site } from '@/lib/site';
 
-export const metadata = {
-  title: 'Page Under Construction | National Institute of Welding',
-};
-
-export default function NotFound() {
+export default function UnderConstruction({ pageTitle = 'Section Under Construction' }) {
   return (
     <section className="relative overflow-hidden bg-slate-950 py-20 text-white min-h-[70vh] flex items-center justify-center">
-      {/* Subtle Arc Background Grid */}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#1e293b20_1px,transparent_1px),linear-gradient(to_bottom,#1e293b20_1px,transparent_1px)] bg-[size:36px_36px]"
@@ -20,18 +15,17 @@ export default function NotFound() {
       />
 
       <div className="container-site max-w-3xl text-center">
-        {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-          <Wrench size={14} className="animate-spin-slow text-amber-400" />
-          <span>Section Under Development</span>
+          <Wrench size={14} className="text-amber-400" />
+          <span>Technical Module In Progress</span>
         </div>
 
         <h1 className="mt-4 font-display text-3xl font-extrabold uppercase leading-tight tracking-wide text-white sm:text-4xl lg:text-5xl">
-          Content Updating <span className="text-weld-blue">Shortly</span>
+          {pageTitle} <span className="text-weld-blue">Updating</span>
         </h1>
 
         <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl mx-auto">
-          This section is currently being updated with our latest 2026 course curriculum, practical booth schedules, and welder qualification testing standards (AWS D1.1, ASME IX, ISO 9606).
+          This module is currently being updated with our latest 2026 welding course syllabi, practical booth schedules, and welder qualification testing protocols (AWS D1.1, ASME IX, ISO 9606).
         </p>
 
         {/* Quick Contact Box */}
@@ -41,7 +35,7 @@ export default function NotFound() {
               <Phone size={18} />
             </div>
             <div>
-              <span className="block text-xs font-bold uppercase text-slate-400">Direct Helpline</span>
+              <span className="block text-xs font-bold uppercase text-slate-400">Admissions Helpline</span>
               <a href={site.phoneHref} className="font-display font-extrabold text-sm text-white hover:text-cyan-300">
                 {site.phone1}
               </a>

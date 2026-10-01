@@ -113,7 +113,7 @@ export default function CtaBand({ enquireHref = '#enquire' }) {
           <span className="text-slate-700 hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
             <MapPin size={13} className="text-[#38BDF8]" />
-            Ambattur SIDCO, Chennai
+            Irandamkattalai, Kovur, Chennai - 600128
           </span>
         </div>
       </div>

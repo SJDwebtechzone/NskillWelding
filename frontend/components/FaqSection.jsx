@@ -63,8 +63,8 @@ export const fullFaqData = [
     id: 7,
     category: 'eligibility',
     question: 'Is accommodation available?',
-    answer: 'Yes, hostel and room accommodation assistance is available near our SIDCO Industrial Estate campus in Ambattur, Chennai for candidates arriving from other states and overseas.',
-    highlights: ['Hostel & Room Assistance', 'Near Ambattur Campus', 'Outstation Candidate Support'],
+    answer: 'Yes, hostel and room accommodation assistance is available near our industrial training campus in Irandamkattalai, Kovur, Chennai for candidates arriving from other states and overseas.',
+    highlights: ['Hostel & Room Assistance', 'Near Kovur Campus', 'Outstation Candidate Support'],
   },
   {
     id: 8,

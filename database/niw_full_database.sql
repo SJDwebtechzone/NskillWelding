@@ -1,3 +1,266 @@
+-- National Institute of Welding - Complete Single-File Database
+-- PostgreSQL 16 Compatible - Ready to Import in 1 Click
+
+-- =========================================================
+-- 1. DATABASE SCHEMA (TABLES & INDEXES)
+-- =========================================================
+-- National Institute of Welding - Knowledge Center schema
+CREATE TABLE IF NOT EXISTS categories (
+  id          SERIAL PRIMARY KEY,
+  slug        VARCHAR(80)  UNIQUE NOT NULL,
+  name        VARCHAR(120) NOT NULL,
+  icon        VARCHAR(40)  NOT NULL,                    -- key mapped to an icon in the frontend
+  count_type  VARCHAR(20)  NOT NULL DEFAULT 'articles', -- 'articles' | 'videos'
+  sort_order  INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS articles (
+  id            SERIAL PRIMARY KEY,
+  slug          VARCHAR(160) UNIQUE NOT NULL,
+  title         VARCHAR(200) NOT NULL,
+  excerpt       TEXT         NOT NULL,
+  content       TEXT         NOT NULL,
+  category_id   INT REFERENCES categories(id) ON DELETE SET NULL,
+  image_url     TEXT,
+  read_minutes  INT          NOT NULL DEFAULT 5,
+  is_featured   BOOLEAN      NOT NULL DEFAULT FALSE,
+  has_video     BOOLEAN      NOT NULL DEFAULT FALSE,
+  published_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_articles_category  ON articles(category_id);
+CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_at DESC);
+
+CREATE TABLE IF NOT EXISTS resources (
+  id              SERIAL PRIMARY KEY,
+  title           VARCHAR(200) NOT NULL,
+  file_type       VARCHAR(10)  NOT NULL,   -- PDF | DOC | XLS
+  size_label      VARCHAR(20)  NOT NULL,   -- e.g. '2.4 MB'
+  file_url        TEXT         NOT NULL,   -- '/files/x.pdf' (served by the API) or a full https URL
+  download_count  INT          NOT NULL DEFAULT 0,
+  sort_order      INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS videos (
+  id             SERIAL PRIMARY KEY,
+  title          VARCHAR(200) NOT NULL,
+  description    TEXT         NOT NULL,
+  youtube_id     VARCHAR(40),
+  thumbnail_url  TEXT,
+  duration       VARCHAR(10)  NOT NULL,
+  category_id    INT REFERENCES categories(id) ON DELETE SET NULL,
+  published_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS faqs (
+  id          SERIAL PRIMARY KEY,
+  question    VARCHAR(255) NOT NULL,
+  answer      TEXT         NOT NULL,
+  is_featured BOOLEAN      NOT NULL DEFAULT TRUE,
+  sort_order  INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id          SERIAL PRIMARY KEY,
+  email       VARCHAR(255) UNIQUE NOT NULL,
+  source      VARCHAR(60)  NOT NULL DEFAULT 'knowledge-center',
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+-- ===== Homepage =====
+CREATE TABLE IF NOT EXISTS courses (
+  id           SERIAL PRIMARY KEY,
+  slug         VARCHAR(120) UNIQUE NOT NULL,
+  title        VARCHAR(120) NOT NULL,
+  short_desc   TEXT         NOT NULL,
+  icon         VARCHAR(40)  NOT NULL,   -- key mapped to an icon in the frontend
+  image_url    TEXT,
+  duration     VARCHAR(40),
+  level        VARCHAR(60),
+  show_on_home BOOLEAN      NOT NULL DEFAULT TRUE,
+  sort_order   INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS site_stats (
+  id          SERIAL PRIMARY KEY,
+  value       VARCHAR(20)  NOT NULL,   -- '15+'
+  label       VARCHAR(60)  NOT NULL,   -- 'Years'
+  sub_label   VARCHAR(80)  NOT NULL,   -- 'Of Excellence'
+  icon        VARCHAR(40)  NOT NULL,
+  sort_order  INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS facilities (
+  id          SERIAL PRIMARY KEY,
+  title       VARCHAR(120) NOT NULL,
+  caption     VARCHAR(200) NOT NULL,
+  image_url   TEXT,
+  sort_order  INT          NOT NULL DEFAULT 0
+);
+
+-- ===== v3: full homepage, training pages, enquiries =====
+-- Safe to re-run: upgrades databases created by earlier versions.
+ALTER TABLE faqs    ADD COLUMN IF NOT EXISTS scope VARCHAR(30) NOT NULL DEFAULT 'knowledge'; -- 'knowledge' | 'home'
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS tagline          VARCHAR(200);
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS overview         TEXT;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS mode             VARCHAR(60) DEFAULT 'Theory + Practical';
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS location         VARCHAR(80) DEFAULT 'Chennai, India';
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS video_youtube_id VARCHAR(40);
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS learn_points     JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS modules          JSONB NOT NULL DEFAULT '[]'; -- [{title, points[]}]
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS details          JSONB NOT NULL DEFAULT '[]'; -- [{label, value}]
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS careers          JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS faqs             JSONB NOT NULL DEFAULT '[]'; -- [{q, a}]
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS gallery          JSONB NOT NULL DEFAULT '[]'; -- [{title, image_url}]
+
+CREATE TABLE IF NOT EXISTS testimonials (
+  id           SERIAL PRIMARY KEY,
+  name         VARCHAR(120) NOT NULL,
+  course       VARCHAR(120) NOT NULL,
+  quote        TEXT         NOT NULL,
+  rating       INT          NOT NULL DEFAULT 5 CHECK (rating BETWEEN 1 AND 5),
+  photo_url    TEXT,
+  is_published BOOLEAN      NOT NULL DEFAULT TRUE,
+  sort_order   INT          NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS recruiters (
+  id          SERIAL PRIMARY KEY,
+  name        VARCHAR(120) UNIQUE NOT NULL,
+  logo_url    TEXT,              -- only use a logo with the company's permission
+  sort_order  INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS enquiries (
+  id          SERIAL PRIMARY KEY,
+  full_name   VARCHAR(120) NOT NULL,
+  whatsapp    VARCHAR(20)  NOT NULL,
+  email       VARCHAR(255),
+  interest    VARCHAR(120),
+  experience  VARCHAR(60),
+  message     TEXT,
+  source_page VARCHAR(200),
+  status      VARCHAR(20)  NOT NULL DEFAULT 'new',   -- new | contacted | enrolled | closed
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_enquiries_created ON enquiries(created_at DESC);
+
+-- ===== v3.1: per-course hero text, industries, related courses =====
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS intro         TEXT;                          -- hero paragraph
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS industries    JSONB NOT NULL DEFAULT '[]';   -- icon keys, see CourseSections.jsx
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS related_slugs JSONB NOT NULL DEFAULT '[]';   -- up to 3 course slugs
+
+
+-- =========================================================
+-- 2. SEED DATA - CATEGORIES, ARTICLES, RESOURCES, FAQS
+-- =========================================================
+INSERT INTO categories (slug, name, icon, count_type, sort_order) VALUES
+ ('welding-basics','Welding Basics','welder','articles',1),
+ ('welding-processes','Welding Processes','pipe','articles',2),
+ ('welding-quality','Welding Quality','shield','articles',3),
+ ('codes-standards','Codes & Standards','book','articles',4),
+ ('safety-ppe','Safety & PPE','hardhat','articles',5),
+ ('career-industry','Career & Industry','chart','articles',6),
+ ('videos-tutorials','Videos & Tutorials','play','videos',7)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO articles (slug,title,excerpt,content,category_id,read_minutes,is_featured,has_video,published_at) VALUES
+ ('what-is-welding-complete-guide-for-beginners','What is Welding? A Complete Guide for Beginners',
+  'Learn the fundamentals of welding, its importance, types and real-world applications.',
+  'Welding joins two metal parts by melting them at the joint and letting them fuse as they cool. It is used in pipelines, bridges, ships, pressure vessels, power plants and almost every fabricated structure.
+
+The most common processes are ARC (SMAW), TIG (GTAW), MIG/MAG (GMAW) and flux-cored welding. Each uses a different heat source and shielding method, which makes it better suited to certain materials, thicknesses and positions.
+
+A beginner usually starts with ARC welding on carbon steel plate, learns to control arc length, travel speed and electrode angle, and then moves on to TIG and MIG before attempting position welding such as 3G and 6G.',
+  (SELECT id FROM categories WHERE slug='welding-basics'),5,TRUE,FALSE,'2026-05-10'),
+ ('tig-vs-mig-vs-arc-welding','TIG vs MIG vs ARC Welding – Which Process is Right for You?',
+  'A detailed comparison to help you understand the strengths, limitations and best applications.',
+  'ARC welding (SMAW) is portable, works outdoors and handles dirty or rusty steel well. It is the most common starting point for new welders.
+
+TIG welding (GTAW) gives the cleanest, most precise welds and is the standard for stainless steel, thin sections and critical root passes in pipe welding. It is slower and needs good hand control.
+
+MIG/MAG welding (GMAW) feeds wire continuously, so it is fast and productive on fabrication and structural work. It needs shielding gas, which makes it less suited to windy sites.
+
+For Gulf and oil-and-gas jobs, strong TIG root and ARC fill/cap skills in 6G are the combination employers most often test for.',
+  (SELECT id FROM categories WHERE slug='welding-processes'),7,TRUE,FALSE,'2026-05-08'),
+ ('understanding-weld-defects-and-prevention','Understanding Weld Defects and How to Prevent Them',
+  'Identify common weld defects, their causes and effective prevention techniques.',
+  'Common weld defects include porosity, undercut, lack of fusion, incomplete penetration, slag inclusion, cracks and excessive spatter.
+
+Porosity is usually caused by contamination, moisture or poor gas shielding. Undercut comes from too much current or the wrong electrode angle. Lack of fusion is often the result of low heat input or fast travel speed.
+
+Most defects can be prevented by cleaning the joint properly, using dry consumables, setting correct parameters from the WPS and keeping a consistent travel speed and angle.',
+  (SELECT id FROM categories WHERE slug='welding-quality'),6,TRUE,FALSE,'2026-05-05'),
+ ('importance-of-welding-codes-and-standards','Importance of Welding Codes and Standards in Industry',
+  'Why welding codes and standards are critical for safety, quality and compliance.',
+  'Welding codes such as ASME Section IX, AWS D1.1 and API 1104 define how welding procedures and welders must be qualified, how welds are inspected and what acceptance criteria apply.
+
+Following a code means a weld made in Chennai can be trusted by a client in Dubai or Houston. It protects lives, avoids costly rework and is a requirement on most industrial projects.',
+  (SELECT id FROM categories WHERE slug='codes-standards'),4,TRUE,TRUE,'2026-05-03'),
+ ('welding-positions-1g-to-6g-explained','Welding Positions 1G, 2G, 3G, 4G, 5G and 6G Explained',
+  'What each welding position means and why 6G is the benchmark qualification.',
+  '1G is flat, 2G horizontal, 3G vertical and 4G overhead for plate. For pipe, 5G is a fixed horizontal pipe and 6G is a pipe fixed at 45 degrees, which requires welding in every position around the joint. Passing a 6G test usually qualifies a welder for all positions.',
+  (SELECT id FROM categories WHERE slug='welding-basics'),6,FALSE,FALSE,'2026-04-28'),
+ ('essential-ppe-for-welders','Essential PPE Every Welder Must Wear',
+  'Helmets, gloves, jackets, respirators and boots: what to wear and why.',
+  'A welder needs an auto-darkening helmet of the correct shade, flame-resistant clothing, leather gloves, safety boots, ear protection and, in confined spaces or with stainless steel, respiratory protection against fumes.',
+  (SELECT id FROM categories WHERE slug='safety-ppe'),4,FALSE,FALSE,'2026-04-22'),
+ ('how-to-become-a-6g-welder','How to Become a 6G Welder',
+  'The training path from beginner to a qualified 6G pipe welder.',
+  'Start with ARC and TIG basics on plate, progress through 2G, 3G and 4G, then move to pipe in 5G and 6G. Plan for regular assessment, visual inspection and bend or radiography tests along the way before attempting a formal qualification test.',
+  (SELECT id FROM categories WHERE slug='career-industry'),8,FALSE,FALSE,'2026-04-15')
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (title,file_type,size_label,file_url,sort_order)
+SELECT * FROM (VALUES
+ ('Welding Symbols Guide','PDF','2.4 MB','/files/welding-symbols-guide.pdf',1),
+ ('Welding Terminology Glossary','DOC','1.8 MB','/files/welding-terminology-glossary.docx',2),
+ ('Welding Inspection Checklist','XLS','1.2 MB','/files/welding-inspection-checklist.xlsx',3),
+ ('WPS & PQR Explained','PDF','3.1 MB','/files/wps-pqr-explained.pdf',4)
+) v WHERE NOT EXISTS (SELECT 1 FROM resources);
+
+INSERT INTO videos (title,description,youtube_id,duration,category_id,published_at)
+SELECT v.title, v.description, v.youtube_id, v.duration, v.category_id, v.published_at::timestamptz FROM (VALUES
+ ('TIG Welding Basics – Setup and Techniques','Learn the basic setup and techniques for perfect TIG welding.',NULL::varchar,'08:45',(SELECT id FROM categories WHERE slug='videos-tutorials'),'2026-05-09'),
+ ('6G Pipe Welding – Tips for Better Performance','Professional tips to improve your 6G pipe welding skills.',NULL,'06:30',(SELECT id FROM categories WHERE slug='videos-tutorials'),'2026-05-06'),
+ ('Welding Safety – Best Practices Every Welder Must Follow','Essential safety practices to protect yourself on the job.',NULL,'05:12',(SELECT id FROM categories WHERE slug='videos-tutorials'),'2026-05-02')
+) v(title,description,youtube_id,duration,category_id,published_at) WHERE NOT EXISTS (SELECT 1 FROM videos);
+
+INSERT INTO faqs (question,answer,sort_order)
+SELECT * FROM (VALUES
+ ('What is the difference between TIG and MIG welding?','TIG uses a non-consumable tungsten electrode and a separate filler rod, giving precise, clean welds ideal for stainless steel and root passes. MIG feeds a consumable wire continuously, so it is faster and suited to fabrication and structural work.',1),
+ ('What is WPS, PQR and WPQR?','A WPS (Welding Procedure Specification) tells the welder how to make a weld. A PQR (Procedure Qualification Record) proves that procedure produces sound welds. A WPQR (Welder Performance Qualification Record) proves an individual welder can follow it.',2),
+ ('What are the types of welding positions?','Plate positions are 1G (flat), 2G (horizontal), 3G (vertical) and 4G (overhead). Pipe positions include 5G (fixed horizontal) and 6G (fixed at 45 degrees), which covers all positions.',3),
+ ('What are the common welding defects?','Porosity, undercut, lack of fusion, incomplete penetration, slag inclusion, cracks and excessive spatter are the most common. Most are prevented with clean joints, dry consumables and correct parameters.',4),
+ ('How can I become a certified welder?','Complete practical training, build skill in the positions you need, then pass a qualification test witnessed to a code such as ASME IX or AWS D1.1. NIW provides training, pre-assessment and qualification support.',5),
+ ('Which welding process is best for beginners?','ARC welding (SMAW) is usually the best starting point. It teaches arc control and puddle reading, and the skills carry over to TIG and MIG.',6)
+) v WHERE NOT EXISTS (SELECT 1 FROM faqs WHERE scope = 'knowledge');
+
+
+-- =========================================================
+-- 3. SEED DATA - HOMEPAGE COURSES & SITE STATS
+-- =========================================================
+INSERT INTO courses (slug,title,short_desc,icon,duration,level,sort_order) VALUES
+ ('tig-welding','TIG Welding','Precision welding for thin materials and critical applications.','torch','2 Months','Beginner / Intermediate',1),
+ ('mig-welding','MIG/MAG Welding','High productivity welding for industrial and manufacturing sectors.','wire','1.5 Months','Beginner',2),
+ ('arc-welding','ARC Welding','Shielded metal arc welding training for strong and reliable joints.','zap','1 Month','Beginner',3),
+ ('6g-pipe-welding','6G Pipe Welding','Advance your skills in 6G pipe welding with certification support.','pipe','2 Months','Intermediate',4),
+ ('structural-welding','Structural Welding','Welding training for structural steel and heavy fabrication.','beam','1.5 Months','Intermediate',5),
+ ('stainless-steel-welding','Stainless Steel','Specialized training for stainless steel and exotic materials.','shield','1.5 Months','Advanced',6)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO site_stats (value,label,sub_label,icon,sort_order)
+SELECT * FROM (VALUES
+ ('15+','Years','Of Excellence','award',1),
+ ('25+','Trainers','Expert Instructors','trainer',2),
+ ('5000+','Students','Trained Successfully','students',3),
+ ('100+','Companies','Industry Partnerships','factory',4)
+) v WHERE NOT EXISTS (SELECT 1 FROM site_stats);
+
+
+
+-- =========================================================
+-- 4. SEED DATA - DETAILED PAGES & COURSE OVERVIEWS
+-- =========================================================
 -- GENERATED by database/tools/build_seed_pages.py -- safe to re-run
 INSERT INTO courses (slug,title,short_desc,icon,duration,level,show_on_home,sort_order) VALUES
  ('fitter-training','Fitter Training','Pipe and structural fitting: drawings, marking, cutting and fit-up.','ruler','1.5 Months','Beginner',FALSE,7)
@@ -121,3 +384,4 @@ SELECT * FROM (VALUES
  ('Do you provide placement assistance?','Yes. We help with CV preparation, practical test preparation and connecting students with employers in India and the Gulf.',5,'home'),
  ('How can I join the course?','Send an enquiry, call or WhatsApp us. We will explain the course, fees and next batch date, and you can visit the institute before joining.',6,'home')
 ) v WHERE NOT EXISTS (SELECT 1 FROM faqs WHERE scope = 'home');
+

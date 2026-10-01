@@ -16,6 +16,11 @@ export const metadata = {
   metadataBase: new URL('https://www.weldingskill.com'),
   title: { default: 'National Institute of Welding', template: '%s | National Institute of Welding' },
   description: 'Practical welding training, welder qualification, inspection and industrial skill development in Chennai.',
+  icons: {
+    icon: '/images/logo.png',
+    shortcut: '/favicon.ico',
+    apple: '/images/logo.png',
+  },
 };
 
 export const viewport = { themeColor: '#0E1116', width: 'device-width', initialScale: 1 };
@@ -23,6 +28,11 @@ export const viewport = { themeColor: '#0E1116', width: 'device-width', initialS
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" type="image/png" href="/images/logo.png" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/images/logo.png" />
+      </head>
       <body>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2">Skip to content</a>
         <Header />

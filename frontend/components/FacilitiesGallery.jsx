@@ -139,7 +139,7 @@ export default function FacilitiesGallery() {
               <Camera size={13} className="animate-pulse" />
             </span>
             <span className="font-display text-[10px] sm:text-[11.5px] font-extrabold uppercase tracking-[0.05em] text-[#0B2545]">
-              NIW HEAVY INDUSTRIAL WORKSHOP • AMBATTUR, CHENNAI
+              NIW HEAVY INDUSTRIAL WORKSHOP • KOVUR, CHENNAI
             </span>
             <span className="h-1.5 w-1.5 rounded-full bg-[#0066FF] animate-ping" />
           </div>

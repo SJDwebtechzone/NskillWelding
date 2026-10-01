@@ -30,7 +30,7 @@ export default async function HomePage() {
     {
       '@context': 'https://schema.org', '@type': 'EducationalOrganization', name: site.name,
       url: 'https://www.weldingskill.com', telephone: site.phone, email: site.email,
-      address: { '@type': 'PostalAddress', streetAddress: 'No.12, SIDCO Industrial Estate, Ambattur', addressLocality: 'Chennai', postalCode: '600098', addressRegion: 'Tamil Nadu', addressCountry: 'IN' },
+      address: { '@type': 'PostalAddress', streetAddress: 'No.2/24, Pillaiyar Koil Street, Raghavendra Nagar, Irandamkattalai, Kovur', addressLocality: 'Chennai', postalCode: '600128', addressRegion: 'Tamil Nadu', addressCountry: 'IN' },
     },
     {
       '@context': 'https://schema.org', '@type': 'FAQPage',

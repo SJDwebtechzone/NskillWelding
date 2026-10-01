@@ -9,7 +9,7 @@ def j(v):
     return q(json.dumps(v, ensure_ascii=False)) + "::jsonb"
 
 COMMON_FAQS = [
-    ("Is accommodation available?", "We can guide outstation students to nearby hostels and shared rooms around Ambattur. Ask our counsellor for current options and costs."),
+    ("Is accommodation available?", "We can guide outstation students to nearby hostels and shared rooms around Irandamkattalai and Kovur, Chennai. Ask our counsellor for current options and costs."),
     ("Do you provide placement assistance?", "Yes. We help with CV preparation, practical test preparation and connecting you with employers in India and the Gulf. Placement depends on your skill level and test results."),
 ]
 
@@ -238,7 +238,7 @@ SELECT * FROM (VALUES
  ('What is the eligibility for welding courses?','Most courses are open to 10th pass, ITI and diploma candidates, and to anyone interested in welding. Advanced courses like 6G need basic welding skills.',1,'home'),
  ('Do you provide practical training?','Yes. About 80% of training time is hands-on practice in our workshop, with individual time on industrial machines.',2,'home'),
  ('Do you provide certification after course completion?','Yes. You receive a course completion certificate after passing the assessment. Code-based welder qualification can be arranged separately.',3,'home'),
- ('Is accommodation available?','We guide outstation students to nearby hostels and shared rooms around Ambattur. Ask our counsellor for current options.',4,'home'),
+ ('Is accommodation available?','We guide outstation students to nearby hostels and shared rooms around Irandamkattalai and Kovur, Chennai. Ask our counsellor for current options.',4,'home'),
  ('Do you provide placement assistance?','Yes. We help with CV preparation, practical test preparation and connecting students with employers in India and the Gulf.',5,'home'),
  ('How can I join the course?','Send an enquiry, call or WhatsApp us. We will explain the course, fees and next batch date, and you can visit the institute before joining.',6,'home')
 ) v WHERE NOT EXISTS (SELECT 1 FROM faqs WHERE scope = 'home');
